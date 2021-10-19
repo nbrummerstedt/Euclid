@@ -23,9 +23,6 @@ class Point : public Cartesian
 	constexpr Point	( const std::array<float,3> & A ) : Cartesian(A) {};
 	constexpr Point	( const Point & P ) : Cartesian(P.x(),P.y(),P.z()) {};
 
-	// A point is empty if any coordinate is unknown
-	constexpr bool empty() { return ( isnan(data[0])|| isnan(data[1]) || isnan(data[2]) ); };
-
 	constexpr Point & 		operator = 	( const Point & );
 
 	constexpr Point 		operator - 	() { return Point( -x(),-y(),-z() ); };
@@ -41,6 +38,9 @@ class Point : public Cartesian
 	constexpr bool all_le (const Point &) const;
 	constexpr bool all_g  (const Point &) const;
 	constexpr bool all_ge (const Point &) const;
+
+	// A point is empty if any coordinate is unknown
+	constexpr bool empty() const;
 
 	friend std::ostream & operator << ( std::ostream & out, const Point A ) { return out << A.x() << "," << A.y() << "," << A.z() << ";"; };
 	friend std::ostream & operator << ( std::ostream & out, const std::vector<Point> v ) { for ( Point c : v ) out << "\n\t" << c; out << std::endl; return out; };
@@ -65,6 +65,8 @@ constexpr bool Point::all_le (const Point & p) const { return (x() <= p.x() && y
 constexpr bool Point::all_g  (const Point & p) const { return (x() >  p.x() && y() >  p.y() && z() >  p.z() ); }
 constexpr bool Point::all_ge (const Point & p) const { return (x() >= p.x() && y() >= p.y() && z() >= p.z() ); }
 
+inline constexpr bool Point::empty() const { return ( isnan(data[0])|| isnan(data[1]) || isnan(data[2]) ); }
+
 // Comparison
 inline constexpr bool 	operator ==	( const Point & A, const Point & B ) { return A.x() == B.x() && A.y() == B.y() && A.z() == B.z(); }
 inline constexpr bool 	operator != ( const Point & A, const Point & B ) { return A.x() != B.x() || A.y() != B.y() || A.z() != B.z(); }
@@ -87,6 +89,7 @@ inline constexpr Point operator * ( const double & a, const Point  & B) { Point 
 
 inline constexpr Point operator / ( const Point  & A, const double & b) { Point P =  A; P /= b; return P; }
 inline constexpr Point operator / ( const double & a, const Point  & B) { Point P =  B; P /= a; return P; }
+
 
 // Argument, angle, with respect to axes in cartesian coordinate system
 std::array<double,3> 	arg ( const Point & ); // angle to axes
