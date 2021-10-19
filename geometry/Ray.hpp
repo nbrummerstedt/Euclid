@@ -11,7 +11,7 @@ namespace Euclid {
 			Point 	origin;
 			Vector 	direction;
 		public :
-			constexpr Ray( const Point & p, const Point & v ) : orinin(p), direction(v) {};
+			constexpr Ray( const Point & p, const Point & v ) : origin(p), direction(v) {};
 			constexpr Ray operator - ( ) { return Ray {origin,-direction}; };
 	};
 }
