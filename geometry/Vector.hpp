@@ -29,10 +29,10 @@ class Vector : public Cartesian {
 	// Binary arithmetic explicitly synthesised from Cartesian
 	constexpr Vector operator * ( const double & a ) const { Cartesian::operator * ( a ); return *this; };
 	constexpr Vector operator / ( const double & a ) const { Cartesian::operator / ( a ); return *this; }; 
-	constexpr Vector operator += ( const double & a ) { Cartesian::operator += ( a ); return *this; };
-	constexpr Vector operator -= ( const double & a ) { Cartesian::operator -= ( a ); return *this; }; 
-	constexpr Vector operator *= ( const double & a ) { Cartesian::operator *= ( a ); return *this; };
-	constexpr Vector operator /= ( const double & a ) { Cartesian::operator /= ( a ); return *this; }; 
+	const Vector operator += ( const double & a ) { Cartesian::operator += ( a ); return *this; };
+	const Vector operator -= ( const double & a ) { Cartesian::operator -= ( a ); return *this; }; 
+	const Vector operator *= ( const double & a ) { Cartesian::operator *= ( a ); return *this; };
+	const Vector operator /= ( const double & a ) { Cartesian::operator /= ( a ); return *this; }; 
 	
 	// Linear algebra operators
 	constexpr Vector cross 	( const Vector & ) 	const;

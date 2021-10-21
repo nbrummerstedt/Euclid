@@ -26,9 +26,9 @@ class Cartesian
 	// Non-const index operator []	-- access : return reference
 	// Const index operator ()		-- extraction : should not return a reference
 	// Non-const index operator ()	-- extraction : should not return a reference
-	const 		double &	operator [] ( size_t i ) const 	{ assert(i<3); return data[i]; };
-				double &	operator [] ( size_t i ) 		{ assert(i<3); return data[i]; };
-	constexpr 	double  	operator () ( size_t i ) const 	{ assert(i<3); return data[i]; };
+	const 		double &	operator [] ( size_t i ) const 	{ assert(i<3); return data[i]; }
+				double &	operator [] ( size_t i ) 		{ assert(i<3); return data[i]; }
+	constexpr 	double  	operator () ( size_t i ) const 	{ assert(i<3); return data[i]; }
 	
 	// Data extract (const) using identifiers
 	constexpr double x	() 	const { return data[0]; };
@@ -36,11 +36,9 @@ class Cartesian
 	constexpr double z	() 	const { return data[2]; };
 	
 	// Data assignment by index
-	constexpr Cartesian &  set	( size_t i , double a ) { assert(i<3); data[i] = a; return *this; };
+	const Cartesian &  set	( size_t i , double a ) { assert(i<3); data[i] = a; return *this; };
 	
 	// Data assignment by istream
-	// Inspired by GEL
-	// Warning: This is by no means robust yet.
 	friend std::istream & operator >> ( std::istream & in, Cartesian & p)
 	{
 		in >> std::ws; if (in.peek() == '[') in.ignore();
@@ -55,8 +53,8 @@ class Cartesian
 	iterator		begin() 		{ return data.begin(); }
 	iterator 		end() 			{ return data.end(); }
 	double* 		get() 			{ return data.data(); }
-	citerator begin() const 	{ return data.begin(); }
-	citerator end() 	const 	{ return data.end(); }
+	citerator begin() const 		{ return data.begin(); }
+	citerator end() 	const 		{ return data.end(); }
 	const double* 	get() 	const 	{ return data.data(); }
 
 	// Unary elementwise arithmetic
@@ -73,14 +71,14 @@ class Cartesian
 	constexpr Cartesian operator / ( const double & ) const; 
 
 	// Assignment operators
-	constexpr Cartesian & 	operator +=	( const Cartesian & );
-	constexpr Cartesian & 	operator -=	( const Cartesian & );
-	constexpr Cartesian & 	operator *=	( const Cartesian & );
-	constexpr Cartesian & 	operator /=	( const Cartesian & );
-	constexpr Cartesian & 	operator +=	( const double & );
-	constexpr Cartesian & 	operator -=	( const double & );
-	constexpr Cartesian & 	operator *=	( const double & );
-	constexpr Cartesian & 	operator /=	( const double & );
+	const Cartesian & 	operator +=	( const Cartesian & );
+	const Cartesian & 	operator -=	( const Cartesian & );
+	const Cartesian & 	operator *=	( const Cartesian & );
+	const Cartesian & 	operator /=	( const Cartesian & );
+	const Cartesian & 	operator +=	( const double & );
+	const Cartesian & 	operator -=	( const double & );
+	const Cartesian & 	operator *=	( const double & );
+	const Cartesian & 	operator /=	( const double & );
 	
 	constexpr double 		major		( ); // largest absolute-value coordinate
 	constexpr double 		minor		( ); // smallest absolute-value coordinate
@@ -98,14 +96,14 @@ constexpr Cartesian 	Cartesian::operator * ( const double & a ) const { return C
 constexpr Cartesian 	Cartesian::operator / ( const double & a ) const { return Cartesian( x() / a, y() / a, z() / a ); }; 
 
 // Assigning operators
-constexpr Cartesian & 	Cartesian::operator += ( const Cartesian & v ) { data[0] += v.x(); data[1] += v.y(); data[2] += v.z(); return *this; };
-constexpr Cartesian & 	Cartesian::operator -= ( const Cartesian & v ) { data[0] -= v.x(); data[1] -= v.y(); data[2] -= v.z(); return *this; };
-constexpr Cartesian & 	Cartesian::operator *= ( const Cartesian & v ) { data[0] *= v.x(); data[1] *= v.y(); data[2] *= v.z(); return *this; };
-constexpr Cartesian & 	Cartesian::operator /= ( const Cartesian & v ) { data[0] /= v.x(); data[1] /= v.y(); data[2] /= v.z(); return *this; };
-constexpr Cartesian & 	Cartesian::operator += ( const double & a ) { data[0] += a; data[1] += a; data[2] += a; return *this; }
-constexpr Cartesian & 	Cartesian::operator -= ( const double & a ) { data[0] -= a; data[1] -= a; data[2] -= a; return *this; }
-constexpr Cartesian & 	Cartesian::operator *= ( const double & a ) { data[0] *= a; data[1] *= a; data[2] *= a; return *this; }
-constexpr Cartesian & 	Cartesian::operator /= ( const double & a ) { data[0] /= a; data[1] /= a; data[2] /= a; return *this; }
+const Cartesian & 	Cartesian::operator += ( const Cartesian & v ) { data[0] += v.x(); data[1] += v.y(); data[2] += v.z(); return *this; };
+const Cartesian & 	Cartesian::operator -= ( const Cartesian & v ) { data[0] -= v.x(); data[1] -= v.y(); data[2] -= v.z(); return *this; };
+const Cartesian & 	Cartesian::operator *= ( const Cartesian & v ) { data[0] *= v.x(); data[1] *= v.y(); data[2] *= v.z(); return *this; };
+const Cartesian & 	Cartesian::operator /= ( const Cartesian & v ) { data[0] /= v.x(); data[1] /= v.y(); data[2] /= v.z(); return *this; };
+const Cartesian & 	Cartesian::operator += ( const double & a ) { data[0] += a; data[1] += a; data[2] += a; return *this; }
+const Cartesian & 	Cartesian::operator -= ( const double & a ) { data[0] -= a; data[1] -= a; data[2] -= a; return *this; }
+const Cartesian & 	Cartesian::operator *= ( const double & a ) { data[0] *= a; data[1] *= a; data[2] *= a; return *this; }
+const Cartesian & 	Cartesian::operator /= ( const double & a ) { data[0] /= a; data[1] /= a; data[2] /= a; return *this; }
 
 // Major, minor: largest and smallest absolute value of individual coordinate
 constexpr double Cartesian::major() { return std::max(std::max(std::abs(x()),std::abs(y())),std::abs(z())); }
