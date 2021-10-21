@@ -1,0 +1,16 @@
+#ifndef EUCLID_MODULE_GEOMETRY
+#define EUCLID_MODULE_GEOMETRY
+
+#include "geometry/Distance.hpp"
+#include "geometry/Interval.hpp"
+#include "geometry/Cartesian.hpp"
+#include "geometry/Point.hpp"
+#include "geometry/Vector.hpp"
+#include "geometry/Segment.hpp"
+#include "geometry/Line.hpp"
+#include "geometry/Ray.hpp"
+#include "geometry/Plane.hpp"
+#include "geometry/Triangle.hpp"
+#include "geometry/Box.hpp"
+
+#endif
