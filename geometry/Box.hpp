@@ -7,69 +7,101 @@
 #include "Point.hpp"
 #include "Triangle.hpp"
 #include "Interval.hpp"
+#include "Ray.hpp"
 
 namespace Euclid {
 
 class Box {
 	Point _min;
 	Point _max;
-	Point _mid;
 	public :
 	constexpr static double min_side_length { 5.0e-4 };
 	Box() {}
-	Box( const Point & a, const Point & b, const Point & c ) : _min(a),_max(b),_mid(c)
-	{
-		double s { min_side_length/2. };
-		if ((_max.x()-_min.x()) < min_side_length ) { _max += Point(s,0,0); _min -= Point(s,0,0); }
-		if ((_max.y()-_min.y()) < min_side_length ) { _max += Point(0,s,0); _min -= Point(0,s,0); }
-		if ((_max.z()-_min.z()) < min_side_length ) { _max += Point(0,0,s); _min -= Point(0,0,s); }
-		assert( _min.all_le(_mid) );
-		assert( _max.all_ge(_mid) );
-	}
+	Box( const Point & a, const Point & b ) : _min(a),_max(b) {}
 	const Point & 	min() const { return _min; }
 	const Point & 	max() const { return _max; }
-	bool 				intersect			( const Point &, const Vector & ) const;
+	bool 				intersect	( const Ray & ) const;
+	bool 				intersect	( const Point&, const Vector& ) const;
 	Interval<Distance> 	distance	( const Point & ) const;
-	static Box 			box         ( const Triangle & t );
+	void			 	minmax_sq_dist	( const Point & ,double&,double&) const;
+	static Box 			box         ( const Triangle & );
 	static Box 			box_and_split( const std::vector<Triangle>&, std::vector<Triangle>&, std::vector<Triangle>&) ;				 
 };
 
 bool 
-Box::intersect( const Point & p, const Vector & dir ) const
+Box::intersect( const Ray & r ) const
 {
 	const double tiny { 3e-7 };
-	Point t0 { (_min-p) / dir }; // Elementwise division
-	Point t1 { (_max-p) / dir }; // Elementwise division
+	Point t0 { (_min-r.origin()) / r.direction() }; // Elementwise division
+	Point t1 { (_max-r.origin()) / r.direction() }; // Elementwise division
 	Point tin  = emin(t0,t1);
 	Point tout = emax(t0,t1);
 	double tmin = std::max(tin[0], std::max(tin[1], tin[2]));
 	double tmax = std::min(tout[0], std::min(tout[1], tout[2]));
 	return ( (tmin-tiny) < (tmax+tiny));
 };
+bool 
+Box::intersect( const Point&p, const Vector&v ) const
+{
+	return intersect(Ray(p,v));
+};
 
 Interval<Distance> 
-Box::distance( const Point & p ) const
+Box::distance( const Point & query ) const
 {
-	const Point a = 0.5*_max-0.5*_min;
-	const Point p0 = _min + a;
-	Vector d = Vector(p-p0);
-	Vector f(d);
-	for(int i=0;i<3;++i) 
-	{
-		if(f[i]>=0)  f[i] = p[i]-_min[i];
-		else f[i] = p[i]-_max[i];
-		if(d[i]<-a[i]) d[i] = p[i]-_min[i];
-		else if(d[i]>a[i]) d[i] = p[i]-_max[i];
-		else  d[i] = 0;
+	// Distance has properties:
+	// If inside box
+	// - min distance is 0
+	// - max distance is distance to farthest point (negative sign)
+	// If outside box
+	// - min distance is distance to closest point in box (positive sign)
+	// - max distance is distance to farthest point in box (positive sign)
+	
+	// Point a is positive valued distance from midpoint to side planes
+	const Point a = 0.5 * ( _max - _min );
+	const Point midpoint = _min + a;
+	// Vector v points from midpoint to query point
+	Vector v = Vector(midpoint,query);
+	Vector d, f;
+	for(int i=0;i<3;++i) {
+		// If we are outside to the left, take min as distance to leftmost
+		// If we are outside to the right, take min as distance to rightmost
+		// If we are inside box, take distance component as zero
+		if      (v[i] < -a[i])  d[i] = query[i]-_min[i];
+		else if (v[i] >  a[i])  d[i] = query[i]-_max[i];
+		else                    d[i] = 0;
+		// If we are to the right of the middle, take max as distance to leftmost
+		// If we are to the left of the middle, take max as distance to rightmost
+		if      (v[i] >= 0 )    f[i] = query[i]-_min[i];
+		else                    f[i] = query[i]-_max[i];
 	}
-	double dmin = d.length();
-	double dmax = f.length();
+	double dmin = d.norm();
+	double dmax = f.norm();
 	assert(dmin<=dmax);
-	return Interval<Distance> {Distance(dmin),Distance(dmax)};
+	return Interval<Distance> {Distance(dmin,true),Distance(dmax,true)};
+};
+
+void
+Box::minmax_sq_dist( const Point & query , double&min, double&max) const
+{
+	const Point a = 0.5 * ( _max - _min );
+	const Point midpoint = _min + a;
+	Vector v = Vector(midpoint,query);
+	Vector d, f;
+	for(int i=0;i<3;++i) {
+		if      (v[i] < -a[i])  d[i] = query[i]-_min[i];
+		else if (v[i] >  a[i])  d[i] = query[i]-_max[i];
+		else                    d[i] = 0;
+		if      (v[i] >= 0 )    f[i] = query[i]-_min[i];
+		else                    f[i] = query[i]-_max[i];
+	}
+	min = d.norm();
+	max = f.norm();
+	return;
 };
 
 Box 
-Box::box( const Triangle & t ) { return Box( t.pmin() , t.pmax(), t.center() ); };
+Box::box( const Triangle & t ) { return Box( t.pmin() , t.pmax() ); };
 
 Box
 Box::box_and_split( const 	std::vector<Triangle> & invec,
@@ -118,7 +150,7 @@ Box::box_and_split( const 	std::vector<Triangle> & invec,
 	assert(!lvec.empty());
 	assert(!rvec.empty());
 	assert(lvec.size()+rvec.size() == invec.size());
-	return Box(box_pmin,box_pmax,mid);
+	return Box(box_pmin,box_pmax);
 };
 		
 } // namespace Euclid

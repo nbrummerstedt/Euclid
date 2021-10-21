@@ -18,23 +18,35 @@ namespace Euclid {
 			// ( However, that's probably how std::abs is implemented anyway )
 			double _data;
 		public :
-			constexpr Distance( const double & a = double() ) : _data(a) {};
-			constexpr double Sign() const { return std::signbit(_data) ? 1. : -1. ; };
-			constexpr double Value() const { return sqrt(Squared()); };
-			constexpr double Squared() const { return abs(_data); };
-			constexpr double SignedSquare() const;
+			constexpr Distance( const double & a = double() , bool squared = false , bool negative = false ) 
+			: _data(negative?(squared?-abs(a):-(a*a)):(squared?a:a*a)) {};
+			constexpr double sign() const { return std::signbit(_data) ? 1. : -1. ; };
+			constexpr double value() const { return sign()*sqrt(squared()); };
+			constexpr double squared() const { return abs(_data); };
+			constexpr double signedSquare() const { return sign()*abs(_data); };
 			constexpr operator bool() const { return abs(_data) > 1e-20; };
+			
+			constexpr bool operator < (const Distance & ) const;
+			constexpr bool operator < (const double & ) const;
 			
 			// Print
 			friend std::ostream & 	operator << ( std::ostream & out, const Distance & d ) 
 			{
-				return out << d.Sign() << " * " << d.Value();
+				return out << d.sign() << " * " << d.value();
 			};
 	};
 	
+	constexpr bool Distance::operator < (const Distance & other ) const
+	{
+		return squared() < other.squared();
+	}
 	
-    // Properties
-    
+	constexpr bool Distance::operator < (const double & other ) const
+	{
+		return squared() < other*other;
+	}
+	
+	// Properties
 	inline constexpr Distance 
 	distance	( const Point & p1, const Point & p2 ) 
 	{

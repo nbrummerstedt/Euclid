@@ -1,11 +1,13 @@
 #ifndef EUCLID_GEOMETRY_TRIANGLE
 #define EUCLID_GEOMETRY_TRIANGLE
 
+#include <iostream>
 #include <array>
 #include "Point.hpp"
 #include "Segment.hpp"
 #include "Distance.hpp"
 #include "Vector.hpp"
+#include "Ray.hpp"
 
 namespace Euclid {
 
@@ -22,9 +24,12 @@ namespace Euclid {
 			constexpr double 	area			( ) const;
 			constexpr Point 	center			( ) const;
 			constexpr Vector 	normal			( ) const;
-			constexpr Distance 	distance		( const Point & p ) const;
+			//constexpr Distance 	distance		( const Point & p ) const;
+			constexpr double 	signedsqrdist	( const Point & p ) const;
+			constexpr bool 		distance 		( const Point & p , double&, double&) const;
 			constexpr Point 	closest_point 	( const Point & p ) const;
-			constexpr bool 		intersect		( const Point & origin, const Vector & direction, double & ) const;
+			constexpr bool 		intersect		( const Ray &, double & ) const;
+			constexpr bool 		intersect		( const Point &, const Vector &, double & ) const;
 			constexpr double 	angle 			( size_t );
 			constexpr Point 	pmin() const  { return emin(data[0],emin(data[1],data[2])); }
 			constexpr Point 	pmax() const  { return emax(data[0],emax(data[1],data[2])); }
@@ -79,7 +84,13 @@ namespace Euclid {
 	
 
 	constexpr bool 
-	Triangle::intersect ( const Point & origin, const Vector & direction, double & measure ) const
+	Triangle::intersect ( const Ray & r, double & measure ) const
+	{
+		return intersect(r.origin(),r.direction(),measure);
+	};
+	
+	constexpr bool 
+	Triangle::intersect ( const Point & src, const Vector & dir, double & t ) const
 	{
 		// Directly taken from
 		// https://github.com/janba/GEL/blob/master/src/GEL/Geometry/Triangle.cpp
@@ -87,33 +98,57 @@ namespace Euclid {
 		// "Moellers method"
 		// If determinant is near zero, ray lies in plane of triangle
 		// which is not considered an intersect
-		double eps { 1e-10 };
-		Vector p = cross( direction, edge(2).as_vector() );
-		double det { dot( edge(0).as_vector() , p ) };
+		double eps 	{ 1e-10 };
+		Vector tvec { vertex(0),src };
+		Vector pvec = cross( dir, edge(2).as_vector() );
+		double det { dot( edge(0).as_vector() , pvec ) };
 		if ( abs(det) < eps ) return false;
-		double inv_det { 1.0 / det };
-		Point p0 { origin - vertex(0) };
-		Vector t {  p0  };
-		double u = dot( t, p ) * inv_det;
-		if (u < 0.0 || u > 1.0) return false;
-		Vector q = cross( t, edge(0).as_vector() );
-		double v = dot( direction, q ) * inv_det;
-		if (v < 0.0 || u + v > 1.0) return false;
+		double inv { 1.0 / det };
+		double a = dot( tvec, pvec ) * inv;
+		if (a < 0.0 || a > 1.0) return false;
+		Vector qvec = cross( tvec, edge(0).as_vector() );
+		double b = dot( dir, qvec ) * inv;
+		if (b < 0.0 || a + b > 1.0) return false;
 		// Ray intersects triangle
-		measure = dot(-edge(2).as_vector(), q) * inv_det;
+		t = dot(-edge(2).as_vector(), qvec) * inv;
 		return true;
 	};
 
+	/*
 	constexpr Distance 
 	Triangle::distance ( const Point & p ) const
 	{
-		// Using triangle face normal, not a manifold normal
-		// A manifold normal should not be required to compute sign even in manifold
 		Point v { closest_point(p) };
 		Vector r { p , v };
 		double sq_dist = r.norm();
-		double sign { (dot( normal() , r) >=0) ? 1. : -1. };
-		return Distance{ sign*sq_dist };
+		bool negative { dot( normal() , r) < 0 };
+		bool squared = true;
+		return Distance{ sq_dist, squared, negative };
+	};
+	*/
+	
+	constexpr double 
+	Triangle::signedsqrdist ( const Point & p ) const
+	{
+		Point 	v 	{ closest_point(p) };
+		Vector 	r 	{ p , v };
+		double 	d 	{ r.norm() };
+		bool 	neg { dot( normal() , r) < 0 };
+		return neg?-d:d;
+	};
+	
+	constexpr bool 
+	Triangle::distance ( const Point & p , double&sq_dist, double&sign) const
+	{
+		// C-style version of distance
+		Point 	v 	{ closest_point(p) };
+		Vector 	r 	{ p , v };
+		bool 	neg { dot( normal() , r) < 0 };
+		// Assign to input variables (internal screaming)
+		sq_dist = r.norm();
+		sign    = neg?-1.:1.;
+		// Indicate success (internal crying)
+		return true;
 	};
 	
 	constexpr Point

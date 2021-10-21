@@ -17,7 +17,7 @@ class Vector : public Cartesian {
 	public:
 	
 	// Constructors
-	constexpr Vector( const double & a) : Cartesian(a) {};
+	constexpr Vector( const double & a = 0.) : Cartesian(a) {};
 	constexpr Vector( const double & x, const double & y, const double & z ) : Cartesian(x,y,z) {};
 	constexpr Vector( const Point & P ) : Cartesian(P.x(),P.y(),P.z()) {};
 	constexpr Vector( const Point & p1 , const Point & p2 ) : Cartesian(p2.x()-p1.x(),p2.y()-p1.y(),p2.z()-p1.z()) {};
