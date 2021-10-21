@@ -3,6 +3,7 @@
 
 #include <array>
 #include <vector>
+#include <cfloat>
 
 #include "Point.hpp"
 #include "Triangle.hpp"

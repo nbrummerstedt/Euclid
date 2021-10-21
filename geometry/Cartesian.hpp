@@ -55,8 +55,8 @@ class Cartesian
 	iterator		begin() 		{ return data.begin(); }
 	iterator 		end() 			{ return data.end(); }
 	double* 		get() 			{ return data.data(); }
-	const citerator begin() const 	{ return data.begin(); }
-	const citerator end() 	const 	{ return data.end(); }
+	citerator begin() const 	{ return data.begin(); }
+	citerator end() 	const 	{ return data.end(); }
 	const double* 	get() 	const 	{ return data.data(); }
 
 	// Unary elementwise arithmetic

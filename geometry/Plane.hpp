@@ -14,8 +14,8 @@ namespace Euclid {
 			Point 	intersect;
 			Vector 	normal;
 		public :
-			constexpr Plane( const Point & p, const Point & v ) : intersect(p), normal(v) {};
-			constexpr Plane operator - ( ) { return Ray {intersect,-normal}; };
+			constexpr Plane( const Point & p, const Vector & v ) : intersect(p), normal(v) {};
+			constexpr Plane operator - ( ) { return Plane {intersect,-normal}; };
 	};
 }
 
